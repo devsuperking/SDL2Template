@@ -1,62 +1,49 @@
-﻿// CMakeProject3.cpp : Defines the entry point for the application.
-//
-
-#include <iostream>
-
+﻿#include <iostream>
 #include <SDL.h>
+
+#define TITLE "Test SDL Game"
 
 using namespace std;
 
-int main(int argc, char* argv[])
-{
-	if (SDL_Init(SDL_INIT_VIDEO) != 0)
-	{
+bool createWindow(SDL_Window* &window, SDL_Surface* &windowSurface) {
+	bool success = true;
+
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		cout << "SDL could not initalize!" << endl;
+		success = false;
+	}
+	else {
+		window = SDL_CreateWindow(TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, SDL_WINDOW_SHOWN);
+		if (window == nullptr) {
+			cout << "Window could not be created!" << endl;
+			success = false;
+		}
+		else {
+			windowSurface = SDL_GetWindowSurface(window);
+		}
+	}
+
+	return success;
+}
+
+int main(int argc, char* args[]) {
+	SDL_Window* window = nullptr;
+	SDL_Surface* screenSurface = nullptr;
+
+	if (!createWindow(window, screenSurface)) {
+		cout << "Could not initalize SDL!" << endl;
 		return 1;
 	}
 
-	SDL_Window* window = SDL_CreateWindow(
-		"SDL Cmake Template",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		640,
-		480,
-		0
-	);
+	SDL_UpdateWindowSurface(window);
 
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
-	SDL_SetRenderDrawColor(renderer, 30, 30, 30, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
-	SDL_RenderPresent(renderer);
+	SDL_Event e;
+	bool exit = false;
 
-	bool isOn = true;
-	while (isOn)
-	{
-		// input handling
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT)
-			{
-				isOn = false;
-			}
-			if (event.type == SDL_WINDOWEVENT
-				&& event.window.event == SDL_WINDOWEVENT_CLOSE
-				&& event.window.windowID == SDL_GetWindowID(window))
-			{
-				isOn = false;
-			}
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
-			{
-				isOn = false;
-			}
-		}
-
-		SDL_Delay(1);
-	}
-
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+	while (!exit)
+		while (SDL_PollEvent(&e))
+			if (e.type == SDL_QUIT)
+				exit = true;
 
 	return 0;
 }
